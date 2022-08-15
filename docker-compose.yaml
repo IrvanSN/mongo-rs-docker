@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  mongo-repl-1:
+#    container_name: mongo-repl-1
+    image: mongo:5.0.10
+#    networks:
+#      - main-network
+    ports:
+      - "27017:27017"
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongo-repl-2:
+#    container_name: mongo-repl-2
+    image: mongo:5.0.10
+#    networks:
+#      - main-network
+    ports:
+      - "27018:27017"
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongo-repl-3:
+#    container_name: mongo-repl-3
+    image: mongo:5.0.10
+#    networks:
+#      - main-network
+    ports:
+      - "27019:27017"
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongo-setup:
+    #    container_name: mongo-setup
+    image: mongo:5.0.10
+    restart: on-failure
+    #    networks:
+    #      - main-network
+    volumes:
+      - ./scripts:/scripts
+    environment:
+      HOST_URL: /run/secrets/host-url
+      DB_USERNAME: /run/secrets/mongo-username
+      DB_PASSWORD: /run/secrets/mongo-password
+      DB_NAME: /run/secrets/mongo-name
+    entrypoint: [ "/scripts/setup.sh" ]
+    depends_on:
+      - mongo-repl-1
+      - mongo-repl-2
+      - mongo-repl-3
+    secrets:
+      - mongo-name
+      - mongo-password
+      - mongo-username
+      - host-url
+
+  app:
+#    container_name: app
+    depends_on:
+      - mongo-setup
+    image: node:16.16-alpine
+    build: .
+    environment:
+      DB_USERNAME: /run/secrets/mongo-username
+      DB_PASSWORD: /run/secrets/mongo-password
+      DB_HOST: mongo-repl-1:27017,mongo-repl-2:27017,mongo-repl-3:27017
+      DB_NAME: /run/secrets/mongo-name
+#    networks:
+#      - main-network
+    ports:
+      - "8080:3000"
+    restart: always
+    secrets:
+      - mongo-name
+      - mongo-password
+      - mongo-username
+
+secrets:
+  mongo-username:
+    external: true
+  mongo-password:
+    external: true
+  mongo-name:
+    external: true
+  host-url:
+    external: true
+
+#networks:
+#  main-network:
+#    driver: bridge
