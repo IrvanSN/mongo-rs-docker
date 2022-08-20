@@ -79,12 +79,16 @@ services:
 secrets:
   mongo-username:
     external: true
+#    file: /scripts/key/mongo-username.txt
   mongo-password:
     external: true
+#    file: /scripts/key/mongo-password.txt
   mongo-name:
     external: true
+#    file: /scripts/key/mongo-name.txt
   host-url:
     external: true
+#    file: /scripts/key/host-url.txt
 
 #networks:
 #  main-network:
