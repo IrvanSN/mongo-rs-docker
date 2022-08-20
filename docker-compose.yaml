@@ -44,7 +44,7 @@ services:
       DB_USERNAME: /run/secrets/mongo-username
       DB_PASSWORD: /run/secrets/mongo-password
       DB_NAME: /run/secrets/mongo-name
-    entrypoint: [ "/scripts/setup.sh" ]
+    entrypoint: [ "sh", "/scripts/setup.sh" ]
     depends_on:
       - mongo-repl-1
       - mongo-repl-2
